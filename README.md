@@ -1,1 +1,1 @@
-# nft-bomberman-4
+# BombermanNFT
