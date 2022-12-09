@@ -1,0 +1,64 @@
+@import './colors.scss';
+
+@font-face {
+  font-family: 'Oswald-Medium';
+  src: url(../public/Oswald-Medium.ttf);
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  font-family: 'Oswald-Medium';
+  background: $white;
+  color: $black;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0.5rem;
+}
+
+.padding {
+  padding: 1rem;
+}
+
+.description {
+  text-align: justify;
+  margin-left: 2rem;
+}
+
+.source {
+  cursor: pointer;
+}
+
+.justify-between {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+
+footer {
+  margin-top: 1rem;
+}
+
+img {
+  margin: 1rem;
+  border-radius: 1rem;
+}
+
+.buy {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: auto;
+  width: max-content;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  background: $yellow;
+  font-size: 2rem;
+}
