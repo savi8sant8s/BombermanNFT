@@ -18,6 +18,7 @@ export default function Home() {
   });
   const [amount, setAmount] = useState(0);
   const [address, setAddress] = useState("");
+  const [tokenURIs, setTokenURIs] = useState<string[]>([]);
 
   const handleGoToSource = () => {
     window.open("https://github.com/savi8sant8s/bomberman-nft");
@@ -61,6 +62,7 @@ export default function Home() {
     await transaction.wait();
     alert("NFT comprado com sucesso!");
     await getCountNFTsAvailable();
+    await getTokenURIs();
   };
 
   const getInfo = async () => {
@@ -82,6 +84,18 @@ export default function Home() {
     });
   };
 
+  const getTokenURIs = async () => {
+    const contract = await getContract();
+    const count = await contract.getCountNFTsAvailable();
+    const amount = 50 - count.toNumber();
+    const tokenURIs = [];
+    for (let i = 0; i < amount; i++) {
+      const tokenURI = await contract.tokenURI(i);
+      tokenURIs.push(tokenURI);
+    }
+    setTokenURIs(tokenURIs);
+  };
+
   useEffect(() => {
     // @ts-ignore
     if (window.ethereum) {
@@ -93,6 +107,7 @@ export default function Home() {
     if (address) {
       getInfo();
       getCountNFTsAvailable();
+      getTokenURIs();
     }
   }, [address]);
 
@@ -129,6 +144,16 @@ export default function Home() {
           Adquirir {nft.name}
         </button>
       </div>
+      {tokenURIs.length > 0 && (
+          <div>
+            <h2>Token URIs</h2>
+            <ul>
+              {tokenURIs.map((tokenURI, index) => (
+                <li key={index}>{tokenURI}</li>
+              ))}
+            </ul>
+          </div>
+        )}
     </div>
   );
 }
