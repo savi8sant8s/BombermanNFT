@@ -1,109 +1,123 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { ethers } from "ethers";
-import { abi } from '../abi'
-const SMART_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_SMART_CONTRACT_ADDRESS as string;
+import { abi } from "../abi";
+const SMART_CONTRACT_ADDRESS = process.env
+  .NEXT_PUBLIC_SMART_CONTRACT_ADDRESS as string;
 
 export default function Home() {
-  const [bombermanNFT, setBombermanNFT] = useState({
+  const [nft, setNFT] = useState({
     title: "",
     symbol: "",
     description:
       "NFT criado por Sávio Santos para o desafio proposto na Formação em Blockchain e Metaverso realizado pela UPE - Garanhuns, 2022.",
     techs:
       "Hardhat, Next.js, Alchemy, Goerli Faucet, MetaMask, Solidity, React e Typescript.",
-    image: "/bomberman.gif",
+    image: "/bomberman.png",
   });
   const [amount, setAmount] = useState(0);
-  const [selectedAddress, setSelectedAddress] = useState<any>(null);
+  const [address, setAddress] = useState("");
 
   const handleGoToSource = () => {
-    window.open("https://github.com/savi8sant8s/BombermanNFT");
+    window.open("https://github.com/savi8sant8s/bomberman-nft");
   };
 
   const connectToMetamask = async () => {
-    const provider = new ethers.providers.Web3Provider(window.ethereum)
+    // @ts-ignore
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
     const accounts = await provider.send("eth_requestAccounts", []);
-    setSelectedAddress(accounts[0])
-    await getNameAndSymbol()
-    await getCountNFTsAvailable()
-  }
+    setAddress(accounts[0]);
+  };
 
   const getContract = async () => {
-    const provider = new ethers.providers.Web3Provider(window.ethereum)
+    // @ts-ignore
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
-    const contract = new ethers.Contract(SMART_CONTRACT_ADDRESS, abi, signer)
-    return contract
-  }
+    const contract = new ethers.Contract(SMART_CONTRACT_ADDRESS, abi, signer);
+    return contract;
+  };
 
   const getCountNFTsAvailable = async () => {
-    const contract = await getContract()
-    const count = await contract.getCountNFTsAvailable()
-    const countNumber = count.toNumber()
-    setAmount(countNumber)
-  }
+    const contract = await getContract();
+    const count = await contract.getCountNFTsAvailable();
+    const amount = count.toNumber();
+    setAmount(amount);
+  };
 
   const handleBuyNFT = async () => {
-    if (!selectedAddress) {
-      connectToMetamask()
-      return
+    if (!address) {
+      return await connectToMetamask();
     }
-    const contract = await getContract()
-    const transaction = await contract.mintNFT(selectedAddress)
-    await transaction.wait()
-    alert("NFT comprado com sucesso!")
-  }
+    const contract = await getContract();
+    const transaction = await contract.mintNFT(address).catch(() => {
+      alert("Compra cancelada!");
+    });
+    if (!transaction) {
+      return;
+    }
+    await transaction.wait();
+    alert("NFT comprado com sucesso!");
+    await getCountNFTsAvailable();
+  };
 
   const getNameAndSymbol = async () => {
-    const contract = await getContract()
-    const name = await contract.name()
-    const symbol = await contract.symbol()
-    setBombermanNFT({
-      ...bombermanNFT,
-      title: name,
+    const contract = await getContract();
+    const title = await contract.name();
+    const symbol = await contract.symbol();
+    setNFT({
+      ...nft,
+      title,
       symbol,
-    })
-  }
+    });
+  };
 
   useEffect(() => {
-    if (window.ethereum) {
-      connectToMetamask();
-    }
+      // @ts-ignore
+      if (window.ethereum) {
+        connectToMetamask();
+      }
   }, []);
+
+  useEffect(() => {
+    if (address) {
+      getNameAndSymbol();
+      getCountNFTsAvailable();
+    }
+  }, [address]);
 
   return (
     <div className="padding">
       <div className="justify-between">
-        <h1>NFT: {bombermanNFT.title} ({bombermanNFT.symbol})</h1>
+        <h1>
+          NFT: {nft.title} ({nft.symbol})
+        </h1>
         <Image
           onClick={handleGoToSource}
-          className="source"
+          className="pointer"
           src="/github.png"
           width={25}
           height={25}
           alt="Github"
         />
       </div>
-      <div>
-        <div>
-          <strong>Descrição: </strong>
-          {bombermanNFT.description}
-        </div>
-        <div>
-          <strong>Tecnologias utilizadas: </strong>
-          {bombermanNFT.techs}
-        </div>
-      </div>
+      <p>
+        <strong>Descrição: </strong> {nft.description}
+      </p>
+      <p>
+        <strong>Tecnologias utilizadas: </strong> {nft.techs}
+      </p>
       <div className="container">
-     
-      <Image
-        src={bombermanNFT.image}
-        alt="Bomberman"
-        width={300}
-        height={300}
-      />
-      <p><strong>Quantidade disponível: </strong> {amount}</p>
-      <div className="buy" onClick={handleBuyNFT}>Adquirir NFT</div>
+        <Image
+          className="nft"
+          src={nft.image}
+          alt="Bomberman"
+          width={300}
+          height={300}
+        />
+        <p>Quantidade disponível: {amount}</p>
+        <button className="buy" onClick={handleBuyNFT}>
+          Adquirir NFT
+        </button>
       </div>
     </div>
   );

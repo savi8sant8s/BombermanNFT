@@ -31,34 +31,26 @@ body {
   margin-left: 2rem;
 }
 
-.source {
+.pointer {
   cursor: pointer;
 }
 
 .justify-between {
-  width: 100%;
   display: flex;
   justify-content: space-between;
 }
 
-footer {
-  margin-top: 1rem;
-}
-
-img {
-  margin: 1rem;
+.nft {
   border-radius: 1rem;
 }
 
 .buy {
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: auto;
-  width: max-content;
   padding: 0.5rem 1rem;
   border-radius: 0.5rem;
+  font-family: 'Oswald-Medium';
+  border: none;
   background: $yellow;
+  color: $black;
   font-size: 2rem;
 }
