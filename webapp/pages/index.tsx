@@ -2,18 +2,19 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import { abi } from "../abi";
-const SMART_CONTRACT_ADDRESS = process.env
+const CONTRACT_ADDRESS = process.env
   .NEXT_PUBLIC_SMART_CONTRACT_ADDRESS as string;
+const METADATA_URI = process.env.NEXT_PUBLIC_METADATA_URI as string;
+const PINATA_URL = process.env.NEXT_PUBLIC_PINATA_URL as string;
 
 export default function Home() {
   const [nft, setNFT] = useState({
+    name: "",
     title: "",
     symbol: "",
-    description:
-      "NFT criado por Sávio Santos para o desafio proposto na Formação em Blockchain e Metaverso realizado pela UPE - Garanhuns, 2022.",
-    techs:
-      "Hardhat, Next.js, Alchemy, Goerli Faucet, MetaMask, Solidity, React e Typescript.",
-    image: "/bomberman.png",
+    description: "",
+    image: "",
+    uri: "",
   });
   const [amount, setAmount] = useState(0);
   const [address, setAddress] = useState("");
@@ -33,7 +34,7 @@ export default function Home() {
     // @ts-ignore
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
-    const contract = new ethers.Contract(SMART_CONTRACT_ADDRESS, abi, signer);
+    const contract = new ethers.Contract(CONTRACT_ADDRESS, abi, signer);
     return contract;
   };
 
@@ -49,9 +50,11 @@ export default function Home() {
       return await connectToMetamask();
     }
     const contract = await getContract();
-    const transaction = await contract.mintNFT(address).catch(() => {
-      alert("Compra cancelada!");
-    });
+    const transaction = await contract
+      .safeMint(address, nft.uri, { value: ethers.utils.parseEther("0.1") })
+      .catch(() => {
+        alert("Compra cancelada!");
+      });
     if (!transaction) {
       return;
     }
@@ -60,27 +63,35 @@ export default function Home() {
     await getCountNFTsAvailable();
   };
 
-  const getNameAndSymbol = async () => {
+  const getInfo = async () => {
     const contract = await getContract();
     const title = await contract.name();
     const symbol = await contract.symbol();
+    const metadata = await fetch(`${PINATA_URL}/${METADATA_URI}`).then((res) =>
+      res.json()
+    );
+
     setNFT({
       ...nft,
       title,
       symbol,
+      name: metadata.name,
+      description: metadata.description,
+      image: `${PINATA_URL}/${metadata.image}`,
+      uri: metadata.image,
     });
   };
 
   useEffect(() => {
-      // @ts-ignore
-      if (window.ethereum) {
-        connectToMetamask();
-      }
+    // @ts-ignore
+    if (window.ethereum) {
+      connectToMetamask();
+    }
   }, []);
 
   useEffect(() => {
     if (address) {
-      getNameAndSymbol();
+      getInfo();
       getCountNFTsAvailable();
     }
   }, [address]);
@@ -103,20 +114,19 @@ export default function Home() {
       <p>
         <strong>Descrição: </strong> {nft.description}
       </p>
-      <p>
-        <strong>Tecnologias utilizadas: </strong> {nft.techs}
-      </p>
       <div className="container">
-        <Image
-          className="nft"
-          src={nft.image}
-          alt="Bomberman"
-          width={300}
-          height={300}
-        />
+        {nft.image != "" && (
+          <Image
+            className="nft"
+            src={nft.image}
+            alt="Bomberman"
+            width={300}
+            height={300}
+          />
+        )}
         <p>Quantidade disponível: {amount}</p>
         <button className="buy" onClick={handleBuyNFT}>
-          Adquirir NFT
+          Adquirir {nft.name}
         </button>
       </div>
     </div>
