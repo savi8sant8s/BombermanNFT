@@ -126,9 +126,6 @@ export default function Home() {
           alt="Github"
         />
       </div>
-      <p>
-        <strong>Descrição: </strong> {nft.description}
-      </p>
       <div className="container">
         {nft.image != "" && (
           <Image
